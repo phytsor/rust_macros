@@ -19,21 +19,10 @@ pub fn name_timestamp(_attr: TokenStream, func: TokenStream) -> TokenStream {
     let caller = quote! {
         #func_vis fn #func_name #func_generics(#func_inputs)#func_output{
             let current_time = chrono::Local::now();
-            println!("==>> Func: {}() {}", stringify!(#func_name), current_time.format("%Y-%m-%d %H:%M:%S"));
+            println!("==>> Func Start: {}() {}", stringify!(#func_name), current_time.format("%Y-%m-%d %H:%M:%S"));
             #func_block
+            println!("==>> Func End: {}() {}", stringify!(#func_name), current_time.format("%Y-%m-%d %H:%M:%S"));
         }
     };
     caller.into()
 }
-
-// fn impl_name_timestamp_macro(ast: &syn::DeriveInput) -> TokenStream {
-//     let name = &ast.ident;
-//     let gen = quote! {
-//         impl Name_Timestamp for #name{
-//             fn name_timestamp(){
-//                 println!("");
-//             }
-//         }
-//     };
-//     gen.into()
-// }
