@@ -2,34 +2,38 @@ extern crate proc_macro;
 
 use crate::proc_macro::TokenStream;
 use quote::quote;
-use syn;
+use syn::{parse_macro_input, ItemFn};
 
-#[proc_macro_derive(Name_Timestamp)]
-pub fn name_timestamp_derive(input: TokenStream) -> TokenStream {
-    let ast = syn::parse(input).unwrap();
+#[proc_macro_attribute]
+pub fn name_timestamp(_attr: TokenStream, func: TokenStream) -> TokenStream {
+    let func = parse_macro_input!(func as ItemFn);
+    let func_vis = &func.vis;
+    let func_block = &func.block;
 
-    impl_name_timestamp_macro(&ast)
-}
+    let func_decl = &func.sig;
+    let func_name = &func_decl.ident;
+    let func_generics = &func_decl.generics;
+    let func_inputs = &func_decl.inputs;
+    let func_output = &func_decl.output;
 
-fn impl_name_timestamp_macro(ast: &syn::DeriveInput) -> TokenStream {
-    let name = &ast.ident;
-    let gen = quote! {
-        impl Name_Timestamp for #name{
-            fn name_timestamp(){
-                println!("");
-            }
+    let caller = quote! {
+        #func_vis fn #func_name #func_generics(#func_inputs)#func_output{
+            let current_time = chrono::Local::now();
+            println!("==>> Func: {}() {}", stringify!(#func_name), current_time.format("%Y-%m-%d %H:%M:%S"));
+            #func_block
         }
     };
-    gen.into()
+    caller.into()
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+// fn impl_name_timestamp_macro(ast: &syn::DeriveInput) -> TokenStream {
+//     let name = &ast.ident;
+//     let gen = quote! {
+//         impl Name_Timestamp for #name{
+//             fn name_timestamp(){
+//                 println!("");
+//             }
+//         }
+//     };
+//     gen.into()
+// }
